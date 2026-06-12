@@ -41,10 +41,10 @@ ON CONFLICT (id) DO NOTHING;;
 SELECT setval(pg_get_serial_sequence('customers', 'id'),
     (SELECT COALESCE(MAX(id), 1) FROM customers));;
 
--- ---------- Demo: cuentas con saldo ----------
+-- ---------- Demo: cuentas con saldo (alineadas con pagoya-web: customer 1) ----------
 INSERT INTO accounts (id, account_number, balance, status, type, customer_id) VALUES
-  (1, 'ACC-ANA-001',  1000.00, 'ACTIVE', 'SAVINGS',  1),
-  (2, 'ACC-LUIS-001',  500.00, 'ACTIVE', 'SAVINGS',  2)
+  (1, '191-001', 5000.00, 'ACTIVE', 'SAVINGS',  1),
+  (2, '191-002', 1000.00, 'ACTIVE', 'CHECKING', 1)
 ON CONFLICT (id) DO NOTHING;;
 
 SELECT setval(pg_get_serial_sequence('accounts', 'id'),

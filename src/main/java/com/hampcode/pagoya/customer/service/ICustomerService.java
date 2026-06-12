@@ -11,4 +11,5 @@ public interface ICustomerService {
     CustomerResponse findByEmail(String email);
     CustomerResponse updateByEmail(String email, UpdateCustomerRequest request);
     void delete(Long id);
+    void deleteMe(String email);
 }

@@ -51,6 +51,19 @@ public class CustomerController {
         return ResponseEntity.ok(customerService.updateByEmail(email, request));
     }
 
+    @Operation(summary = "Darme de baja (soft delete de mi propio perfil)")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Perfil dado de baja"),
+        @ApiResponse(responseCode = "400", description = "Tienes cuentas con saldo"),
+        @ApiResponse(responseCode = "401", description = "No autenticado")
+    })
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteMe(Authentication authentication) {
+        String email = ((UserDetails) authentication.getPrincipal()).getUsername();
+        customerService.deleteMe(email);
+        return ResponseEntity.noContent().build();
+    }
+
     @Operation(summary = "Obtener un cliente por id")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Cliente encontrado"),

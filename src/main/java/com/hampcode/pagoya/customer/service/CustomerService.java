@@ -1,5 +1,6 @@
 package com.hampcode.pagoya.customer.service;
 
+import com.hampcode.pagoya.account.repository.AccountRepository;
 import com.hampcode.pagoya.auth.model.User;
 import com.hampcode.pagoya.auth.repository.UserRepository;
 import com.hampcode.pagoya.customer.dto.CustomerResponse;
@@ -7,12 +8,15 @@ import com.hampcode.pagoya.customer.dto.UpdateCustomerRequest;
 import com.hampcode.pagoya.customer.mapper.CustomerMapper;
 import com.hampcode.pagoya.customer.model.Customer;
 import com.hampcode.pagoya.customer.repository.CustomerRepository;
+import com.hampcode.pagoya.shared.exception.BusinessRuleException;
 import com.hampcode.pagoya.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +25,7 @@ public class CustomerService implements ICustomerService {
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
     private final UserRepository userRepository;
+    private final AccountRepository accountRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -42,7 +47,7 @@ public class CustomerService implements ICustomerService {
     public CustomerResponse findByEmail(String email) {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new ResourceNotFoundException("usuario no encontrado"));
-        return customerRepository.findByUserId(user.getId())
+        return customerRepository.findByUser_Id(user.getId())
             .map(customerMapper::toResponse)
             .orElseThrow(() -> new ResourceNotFoundException("perfil no encontrado"));
     }
@@ -52,7 +57,7 @@ public class CustomerService implements ICustomerService {
     public CustomerResponse updateByEmail(String email, UpdateCustomerRequest request) {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new ResourceNotFoundException("usuario no encontrado"));
-        Customer customer = customerRepository.findByUserId(user.getId())
+        Customer customer = customerRepository.findByUser_Id(user.getId())
             .orElseThrow(() -> new ResourceNotFoundException("perfil no encontrado"));
 
         customer.setFullName(request.fullName());
@@ -65,6 +70,25 @@ public class CustomerService implements ICustomerService {
     public void delete(Long id) {
         Customer customer = customerRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("cliente no encontrado"));
+        softDelete(customer);
+    }
+
+    @Override
+    @Transactional
+    public void deleteMe(String email) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new ResourceNotFoundException("usuario no encontrado"));
+        Customer customer = customerRepository.findByUser_Id(user.getId())
+            .orElseThrow(() -> new ResourceNotFoundException("perfil no encontrado"));
+        softDelete(customer);
+    }
+
+    private void softDelete(Customer customer) {
+        if (accountRepository.existsByCustomerIdAndBalanceGreaterThan(
+                customer.getId(), BigDecimal.ZERO)) {
+            throw new BusinessRuleException(
+                "no puedes darte de baja con cuentas que tienen saldo");
+        }
         customerRepository.delete(customer);
     }
 }

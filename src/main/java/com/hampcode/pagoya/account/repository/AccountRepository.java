@@ -6,11 +6,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
 public interface AccountRepository extends JpaRepository<Account, Long> {
     boolean existsByCustomerIdAndType(Long customerId, AccountType type);
+    boolean existsByCustomerIdAndBalanceGreaterThan(Long customerId, BigDecimal balance);
     Optional<Account> findByAccountNumber(String accountNumber);
     Page<Account> findByCustomerId(Long customerId, Pageable pageable);
 

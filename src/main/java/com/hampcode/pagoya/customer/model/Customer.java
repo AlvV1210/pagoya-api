@@ -1,10 +1,15 @@
 package com.hampcode.pagoya.customer.model;
 
+import com.hampcode.pagoya.auth.model.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "customers")
+@SQLDelete(sql = "UPDATE customers SET deleted = true WHERE id = ?")
+@SQLRestriction("deleted = false")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Customer {
 
@@ -21,6 +26,10 @@ public class Customer {
     @Column
     private String phone;
 
-    @Column(name = "user_id", nullable = false, unique = true)
-    private Long userId;
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", unique = true)
+    private User user;
+
+    @Column(nullable = false)
+    private boolean deleted;
 }

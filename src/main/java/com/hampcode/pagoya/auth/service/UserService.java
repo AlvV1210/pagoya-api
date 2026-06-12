@@ -52,7 +52,7 @@ public class UserService implements IUserService {
             .fullName(request.fullName())
             .dni(request.dni())
             .phone(request.phone())
-            .userId(user.getId())
+            .user(user)
             .build();
         customer = customerRepository.save(customer);
 
