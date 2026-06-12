@@ -1,0 +1,34 @@
+databases:
+  - name: pagoya-db # Nombre de la base de datos en Render
+databaseName: pagoya_db # Nombre de la BD interna
+user: pagoya # Usuario de la BD
+plan: free # Plan gratuito
+services:
+  - type: web # Servicio web accesible por HTTP
+name: pagoya-api # Define la URL pública del servicio
+runtime: docker # Usa el Dockerfile del repositorio
+dockerfilePath: ./Dockerfile
+plan: free
+healthCheckPath: /v3/api-docs # Ruta 200 que verifica que la API vive
+envVars:
+  # Perfil de Spring: activa application-prod.yml
+  - key: SPRING_PROFILES_ACTIVE
+value: prod
+  # Conexión a la BD (los valores se toman de pagoya-db)
+  - key: DB_HOST
+fromDatabase: { name: pagoya-db, property: host }
+  - key: DB_PORT
+fromDatabase: { name: pagoya-db, property: port }
+  - key: DB_NAME
+fromDatabase: { name: pagoya-db, property: database }
+  - key: DB_USERNAME
+fromDatabase: { name: pagoya-db, property: user }
+  - key: DB_PASSWORD
+fromDatabase: { name: pagoya-db, property: password }
+  # Secreto JWT: Render lo genera aleatorio y seguro (>=32 bytes)
+  - key: JWT_SECRET
+generateValue: true
+  # Orígenes permitidos para CORS (tu frontend de Netlify).
+  # sync: false => Render NO lo autocompleta; lo escribes tú.
+  - key: CORS_ALLOWED_ORIGINS
+sync: false
