@@ -42,7 +42,7 @@ public class SecurityConfig {
                                 "/swagger-ui.html"
                         ).permitAll()
                         .requestMatchers("/api/transfers/**").permitAll()
-                        .requestMatchers("/api/accounts/**").permitAll()
+                        .requestMatchers("/api/accounts/customer/**").permitAll()
                         .requestMatchers("/api/auth/logout-all").authenticated()
                         .anyRequest().authenticated()
                 )

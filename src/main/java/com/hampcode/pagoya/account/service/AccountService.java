@@ -9,6 +9,7 @@ import com.hampcode.pagoya.account.mapper.AccountMapper;
 import com.hampcode.pagoya.account.model.Account;
 import com.hampcode.pagoya.account.model.AccountStatus;
 import com.hampcode.pagoya.account.repository.AccountRepository;
+import com.hampcode.pagoya.customer.service.CurrentCustomerService;
 import com.hampcode.pagoya.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,20 +27,23 @@ public class AccountService implements IAccountService {
 
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
+    private final CurrentCustomerService currentCustomerService;
 
     @Override
     @Transactional
     public AccountResponse create(CreateAccountRequest request) {
+        Long customerId = request.customerId() != null
+            ? request.customerId()
+            : currentCustomerService.current().getId();
         // RN-07: un cliente no puede tener dos cuentas del mismo tipo
-        if (accountRepository.existsByCustomerIdAndType(
-                request.customerId(), request.type()))
+        if (accountRepository.existsByCustomerIdAndType(customerId, request.type()))
             throw new DuplicateAccountTypeException();
         Account account = Account.builder()
             .accountNumber(UUID.randomUUID().toString().substring(0, 12).toUpperCase())
             .balance(BigDecimal.ZERO)
             .status(AccountStatus.ACTIVE)
             .type(request.type())
-            .customerId(request.customerId())
+            .customerId(customerId)
             .build();
         return accountMapper.toResponse(accountRepository.save(account));
     }
@@ -50,6 +54,14 @@ public class AccountService implements IAccountService {
         return accountRepository.findByAccountNumber(accountNumber)
             .map(accountMapper::toBalance)
             .orElseThrow(() -> new ResourceNotFoundException("cuenta no encontrada"));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<AccountResponse> findMyAccounts(Pageable pageable) {
+        Long customerId = currentCustomerService.current().getId();
+        return accountRepository.findByCustomerId(customerId, pageable)
+            .map(accountMapper::toResponse);
     }
 
     @Override

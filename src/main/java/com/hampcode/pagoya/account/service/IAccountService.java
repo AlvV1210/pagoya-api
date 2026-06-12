@@ -11,6 +11,7 @@ import java.util.List;
 public interface IAccountService {
     AccountResponse create(CreateAccountRequest request);
     AccountBalanceResponse getBalance(String accountNumber);
+    Page<AccountResponse> findMyAccounts(Pageable pageable);
     Page<AccountResponse> findByCustomer(Long customerId, Pageable pageable);
     List<AccountSummaryReport> reportSummary();
 }

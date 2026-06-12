@@ -25,16 +25,29 @@ public class AccountController {
 
     private final IAccountService accountService;
 
-    @Operation(summary = "Crear una cuenta para el cliente")
+    @Operation(summary = "Crear una cuenta (usuario autenticado o customerId en body)")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Cuenta creada"),
-        @ApiResponse(responseCode = "400", description = "Datos invalidos o cuenta duplicada")
+        @ApiResponse(responseCode = "400", description = "Datos invalidos o cuenta duplicada"),
+        @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     @PostMapping
     public ResponseEntity<AccountResponse> create(
             @Valid @RequestBody CreateAccountRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(accountService.create(request));
+    }
+
+    @Operation(summary = "Listar mis cuentas (usuario autenticado, paginado)")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Lista paginada de mis cuentas"),
+        @ApiResponse(responseCode = "401", description = "No autenticado")
+    })
+    @GetMapping("/me")
+    public ResponseEntity<PageResponse<AccountResponse>> findMyAccounts(
+            @PageableDefault(size = 10, sort = "id") Pageable pageable) {
+        return ResponseEntity.ok(
+            PageResponse.from(accountService.findMyAccounts(pageable)));
     }
 
     @Operation(summary = "Consultar el saldo de una cuenta")
