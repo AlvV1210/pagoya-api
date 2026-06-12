@@ -6,6 +6,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    defer-datasource-initialization: true
     show-sql: true
     properties:
       hibernate:
@@ -13,7 +14,8 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   sql:
     init:
-      mode: never
+      mode: always
+      separator: ";;"
 
 pagoya:
   security:
